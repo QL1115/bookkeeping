@@ -3,7 +3,13 @@
 
 
 ## 啟動
- **`src/MainTester.java` 為專案啟動的類別**
+1. 請自行使用第八組的ID及Password配置好 `util/jdbc.properties` 的三個屬性
+   - `jdbc.url屬性`：
+      - 配置好IP位置及資料庫名稱
+      - 在後面加上 `?useSSL=true&characterEncoding=utf8` 確保使用SSL加密連線以及utf8編碼
+   - `jdbc.userid`：使用者名稱
+   - `jdbc.pwd`：密碼
+2. **`src/MainTester.java` 為專案啟動的類別**
 
 
 ## 專案結構
