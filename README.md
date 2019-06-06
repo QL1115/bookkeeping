@@ -1,8 +1,10 @@
 # bookkeeping
 第八組——記帳本
 
+
 ## 啟動
  **`src/MainTester.java` 為專案啟動的類別**
+
 
 ## 專案結構
 ### package 說明
@@ -26,5 +28,6 @@
 - `test/` 此 package 下的各個 class 是用來測試各個單一功能
 - `src/Tester.java` 可不用理
 - `src/MainTester.java` 專案的進入點
+
 
 ## 注意事項
