@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.*;
 import com.no8.controller.UserService;
+import com.no8.exception.BookkeepingException;
 import com.no8.model.User;
 
 public class LogSignPanel extends JPanel{
@@ -129,20 +130,24 @@ public class LogSignPanel extends JPanel{
 				String userPwd = passwordTF.getText();
 				
 				User user = null;
-				if (logRBtn.isSelected()) {			// 登錄
-					// 呼叫 UserService的login方法
-					user = userService.login(userId, userPwd);
-				} else if (signRBtn.isSelected()) {	// 註冊
-					// 呼叫 UserService的signUp方法
-					String userName = userNameTF.getText();
-					user = userService.signUp(userId, userName, userPwd);
+				try {
+					if (logRBtn.isSelected()) {			// 登錄
+						// 呼叫 UserService的login方法
+						user = userService.signIn(userId, userPwd);
+					} else if (signRBtn.isSelected()) {	// 註冊
+						// 呼叫 UserService的signUp方法
+						String userName = userNameTF.getText();
+						user = userService.signUp(userId, userName, userPwd);
+					}
+				} catch (BookkeepingException ex) {
+					// TODO
 				}
 				//
-				if (user != null) {
-					// TODO 其他頁籤可顯示
-				} else {
-					// TODO 登錄失敗處理
-				}
+//				if (user != null) {
+//					// TODO 其他頁籤可顯示
+//				} else {
+//					// TODO 登錄失敗處理
+//				}
 			}
 		});
 	}

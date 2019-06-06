@@ -34,5 +34,11 @@ public class User {
 		// TODO 做密碼格式檢查
 		this.password = password;
 	}
+	@Override
+	public String toString() {
+		return "User [用戶ID: " + userId + ", 密碼: " + password + ", 用戶名: " + userName + "]";
+	}
+	
+	
 	
 }
