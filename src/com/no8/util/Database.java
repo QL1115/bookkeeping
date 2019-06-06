@@ -23,9 +23,9 @@ public class Database {
 			pwd = bundle.getString("jdbc.pwd");
 		} catch (Exception e) {
 			driver = "com.mysql.cj.jdbc.Driver";
-			url = "jdbc:mysql://140.119.19.79/MG08?useSSL=true&characterEncoding=utf8";
-			id = "MG08";
-			pwd = "xudtay";
+			url = "jdbc:mysql://IP位置/資料庫名稱?useSSL=true&characterEncoding=utf8";
+			id = "用戶名";
+			pwd = "密碼";
 		}
 		DRIVER = driver;
 		URL = url;
