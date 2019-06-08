@@ -15,7 +15,7 @@ public class UserTest {
 			
 			System.out.println();
 			// 用戶登入
-			User user2 = service.signIn("2", "123");
+			User user2 = service.signIn("daniel123", "123daniel");
 			System.out.println(user2);
 			System.out.println("目前登錄的用戶： " + UserService.loggedinUser.getUserName());
 			
