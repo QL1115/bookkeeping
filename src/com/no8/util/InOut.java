@@ -12,12 +12,12 @@ public enum InOut {
 	}
 	
 	// 
-	public String getName() {
+	public String getInOutName() {
 		return name;
 	}
 	
 	// 根據名稱轉換成InOut型別
-	public InOut nameToInOut(String name) throws BookkeepingException {
+	public static InOut switchNameToInOut(String name) throws BookkeepingException {
 		if (name == null || name.trim().length() == 0) {
 			throw new BookkeepingException("必須傳入欲轉換成InOut型別的名稱");
 		}
@@ -27,7 +27,7 @@ public enum InOut {
 			case "支出":
 				return EXPENDITURE;
 			default: 
-				return null;
+				throw new BookkeepingException("字符串轉換InOut型別失敗");
 		}
 	}
 }

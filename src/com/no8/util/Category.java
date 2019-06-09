@@ -41,8 +41,8 @@ public enum Category {
 	}
 	
 	// 查看是收入或是支出
-	public String getInOut() {
-		return inout.getName();
+	public InOut getInOut() {
+		return inout;
 	}
 	
 	// 有項目名稱(String)轉成項目(Enum)

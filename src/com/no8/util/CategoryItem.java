@@ -4,12 +4,6 @@ import com.no8.exception.BookkeepingException;
 
 public enum CategoryItem {
 	
-//	private String itemName;
-//	private String categoryName;
-//	
-//	public CategoryItem(String categoryName, String itemName) {		
-//	}
-	
 	FOOD(Category.DIET, "食物"),
 	DRINK(Category.DIET, "飲料"),
 	PART_TIME_JOB(Category.JOB, "兼職"),

@@ -10,7 +10,7 @@ import com.no8.model.User;
 public class UserService {
 	// 代理模式
 	private UserDAO dao  = new UserDAO();
-	public static User loggedinUser; 	// TODO 登錄的用戶
+	public static User loggedinUser; 	// 登錄的用戶
 	
 	/**
 	 *	用戶登錄 

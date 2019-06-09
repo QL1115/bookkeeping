@@ -13,6 +13,7 @@ import com.no8.model.Record;
 import com.no8.model.User;
 import com.no8.util.CategoryItem;
 import com.no8.util.Database;
+import com.no8.util.InOut;
 
 /**
  * 收支記錄與資料庫的連結
@@ -21,8 +22,8 @@ import com.no8.util.Database;
 class RecordDAO {
 	private static final String INSERT = 
 			"INSERT INTO `income_expenditure`(`fk_user_id`, `amount`, `category_item`,"
-			+ " `date`, `description`)"
-			+ " VALUES (?, ?, ?, ?, ?)";
+			+ " `date`, `description`, `in_out`)"
+			+ " VALUES (?, ?, ?, ?, ?, ?)";
 	public Integer insertRecord(Record record) throws BookkeepingException {
 		try(
 				Connection conn = Database.getConnection();
@@ -33,6 +34,7 @@ class RecordDAO {
 			pstmt.setString(3, record.getCategoryItem().getItemName());
 			pstmt.setDate(4, Date.valueOf(record.getDate()));	//
 			pstmt.setString(5, record.getDescription());
+			pstmt.setString(6, record.getCategoryItem().getCategory().getInOut().getInOutName());	// 收入或支出
 			
 			int row = pstmt.executeUpdate();
 			return row;
@@ -59,9 +61,7 @@ class RecordDAO {
 				while(rs.next()) {
 					Record record = new Record();
 					record.setId(rs.getInt("id"));
-					User user = new User();
-					user.setUserId(rs.getString("fk_user_id"));
-					record.setUser(user);
+					record.setUser(UserService.loggedinUser);
 					record.setAmount(rs.getDouble("amount"));
 					record.setCategoryItem(CategoryItem.switchNameToItem(rs.getString("category_item")));
 					record.setDate(rs.getDate("date").toLocalDate());	//
@@ -79,13 +79,14 @@ class RecordDAO {
 	private static final String QUERY_RECORD_BY_ID =
 			"SELECT `id`, `fk_user_id`, `amount`, `category_item`, `date`, `description`"
 			+ " FROM `income_expenditure`"
-			+ " WHERE id = ?";
+			+ " WHERE id = ? AND fk_user_id = ?";
 	public Record findRecordById(Integer recordId) throws BookkeepingException {
 		try(
 			Connection conn = Database.getConnection();
 			PreparedStatement pstmt = conn.prepareStatement(QUERY_RECORD_BY_ID);
 		) {
 			pstmt.setInt(1, recordId);
+			pstmt.setString(2, UserService.loggedinUser.getUserId()); // 確保查詢的是登錄用戶的收支記錄
 			try(
 					ResultSet rs = pstmt.executeQuery();
 			) {
@@ -93,9 +94,7 @@ class RecordDAO {
 				if (rs.next()) {
 					record = new Record();
 					record.setId(rs.getInt("id"));
-					User user = new User();
-					user.setUserId(rs.getString("fk_user_id"));
-					record.setUser(user);
+					record.setUser(UserService.loggedinUser);
 					record.setAmount(rs.getDouble("amount"));
 					record.setCategoryItem(CategoryItem.switchNameToItem(rs.getString("category_item")));
 					record.setDate(rs.getDate("date").toLocalDate());
@@ -111,7 +110,7 @@ class RecordDAO {
 	private static final String QUERY_RECORDS_BY_TIME_PERIOD = 
 			"SELECT `id`, `fk_user_id`, `amount`, `category_item`, `date`, `description`"
 			+ " FROM `income_expenditure`"
-			+ " WHERE date BETWEEN ? AND ?";
+			+ " WHERE date BETWEEN ? AND ? AND fk_user_id = ?";
 	public ArrayList<Record> findRecordsByTimePeriod(LocalDate start, LocalDate end) throws BookkeepingException {
 		try(
 				Connection conn = Database.getConnection();
@@ -119,6 +118,7 @@ class RecordDAO {
 		) {
 			pstmt.setDate(1, Date.valueOf(start));
 			pstmt.setDate(2, Date.valueOf(end));
+			pstmt.setString(3, UserService.loggedinUser.getUserId());	// 確保查詢的是登錄用戶的收支記錄
 			try(
 					ResultSet rs = pstmt.executeQuery();
 			) {
@@ -126,9 +126,7 @@ class RecordDAO {
 				while (rs.next()) {
 					Record record = new Record();
 					record.setId(rs.getInt("id"));
-					User user = new User();
-					user.setUserId(rs.getString("fk_user_id"));
-					record.setUser(user);
+					record.setUser(UserService.loggedinUser);
 					record.setAmount(rs.getDouble("amount"));
 					record.setCategoryItem(CategoryItem.switchNameToItem(rs.getString("category_item")));
 					record.setDate(rs.getDate("date").toLocalDate());
@@ -143,9 +141,74 @@ class RecordDAO {
 		}
 	}
 	
+	
+	private static final String FIND_RECORDS_BY_INOUT = 
+		"SELECT `id`, `fk_user_id`, `amount`, `category_item`, `date`, `description`"
+		+ " FROM `income_expenditure` WHERE in_out = ? AND fk_user_id = ?";
+	public ArrayList<Record> findRecordsByInOut(InOut inout) throws BookkeepingException {
+		try(
+				Connection conn = Database.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(FIND_RECORDS_BY_INOUT);
+		) {
+			pstmt.setString(1, inout.getInOutName());
+			pstmt.setString(2, UserService.loggedinUser.getUserId());
+			try(
+					ResultSet rs = pstmt.executeQuery();
+			) {
+				ArrayList<Record> list = new ArrayList<Record>();
+				while (rs.next()) {
+					Record record = new Record();
+					record.setId(rs.getInt("id"));
+					record.setUser(UserService.loggedinUser);
+					record.setAmount(rs.getDouble("amount"));
+					record.setCategoryItem(CategoryItem.switchNameToItem(rs.getString("category_item")));
+					record.setDate(rs.getDate("date").toLocalDate());
+					record.setDescription(rs.getString("description"));
+					//
+					list.add(record);
+				}
+				return list;
+			}
+		} catch (SQLException e) {
+			throw new BookkeepingException("根據收入或支出查詢收支記錄失敗", e);
+		}
+	}
+	
+	private static final String FIND_RECORDS_BY_CATEGORY_ITEM = 
+			"SELECT `id`, `fk_user_id`, `amount`, `category_item`, `date`, `description`"
+			+ " FROM `income_expenditure` WHERE category_item = ? AND fk_user_id = ?";
+	public ArrayList<Record> findRecordsByCategoryItem(CategoryItem item) throws BookkeepingException {
+		try(
+				Connection conn = Database.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(FIND_RECORDS_BY_CATEGORY_ITEM);
+		) {
+			pstmt.setString(1, item.getItemName());
+			pstmt.setString(2, UserService.loggedinUser.getUserId());
+			try(
+					ResultSet rs = pstmt.executeQuery();
+			) {
+				ArrayList<Record> list = new ArrayList<Record>();
+				while (rs.next()) {
+					Record record = new Record();
+					record.setId(rs.getInt("id"));
+					record.setUser(UserService.loggedinUser);
+					record.setAmount(rs.getDouble("amount"));
+					record.setCategoryItem(CategoryItem.switchNameToItem(rs.getString("category_item")));
+					record.setDate(rs.getDate("date").toLocalDate());
+					record.setDescription(rs.getString("description"));
+					//
+					list.add(record);
+				}
+				return list;
+			}
+		} catch (SQLException e) {
+			throw new BookkeepingException("根據收支細項查詢收支記錄失敗", e);
+		}
+	}
+	
 	private static final String UPDARE = 
 			"UPDATE `income_expenditure` SET `amount`= ?,`category_item`= ?,"
-			+ " `date`= ?, `description`= ? WHERE id = ?";
+			+ " `date`= ?, `description`= ?, `in_out` = ? WHERE id = ? AND fk_user_id = ?";
 	public int updateRecord(Record record) throws BookkeepingException {
 		try(
 				Connection conn = Database.getConnection();
@@ -155,8 +218,10 @@ class RecordDAO {
 			pstmt.setString(2, record.getCategoryItem().getItemName());
 			pstmt.setDate(3, Date.valueOf(record.getDate()));
 			pstmt.setString(4, record.getDescription());
-			pstmt.setInt(5, record.getId());
-			
+			pstmt.setString(5, record.getCategoryItem().getCategory().getInOut().getInOutName());	// 收入或支出
+			pstmt.setInt(6, record.getId());
+			pstmt.setString(7, UserService.loggedinUser.getUserId());	// 確保查詢的是登錄用戶的收支記錄
+			//
 			int row = pstmt.executeUpdate();
 			return row;
 			
@@ -165,17 +230,19 @@ class RecordDAO {
 		}
 	}
 	
-	private static final String DELETE = "DELETE FROM `income_expenditure` WHERE id = ?";
+	private static final String DELETE = "DELETE FROM `income_expenditure` WHERE id = ? AND fk_user_id = ?";
 	public int deleteRecord(Integer recordId) throws BookkeepingException {
 		try(
 				Connection conn = Database.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(DELETE);
 		) {
 			pstmt.setInt(1, recordId);
+			pstmt.setString(2, UserService.loggedinUser.getUserId());	// 確保查詢的是登錄用戶的收支記錄
 			int row = pstmt.executeUpdate();
 			return row;
 		} catch (SQLException e) {
 			throw new BookkeepingException("刪除收支記錄失敗", e);
 		}
 	}
+
 }

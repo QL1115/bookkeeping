@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import com.no8.exception.BookkeepingException;
 import com.no8.model.Record;
 import com.no8.util.CategoryItem;
+import com.no8.util.InOut;
 
 /**
  * 收支紀錄相關服務
@@ -45,11 +46,15 @@ public class RecordService {
 		//
 		return dao.insertRecord(record);
 	}
-	
+	/**
+	 * 查詢用戶的所有收支記錄
+	 */
 	public ArrayList<Record> findRecords() throws BookkeepingException {
 		return dao.findRecords();
 	}
-	
+	/**
+	 * 根據收支紀錄的id來查找收支紀錄
+	 */
 	public Record findRecordById(Integer recordId) throws BookkeepingException {
 		if (recordId == null || recordId == 0) {
 			throw new BookkeepingException("必須傳入欲查詢的收支記錄ID");
@@ -76,10 +81,37 @@ public class RecordService {
 	}
 	
 	/**
+	 * 根據「收入」或「支出」查找收支記錄
+	 * @param inoutName String 型別
+	 */
+	public ArrayList<Record> findRecordsByInOut(String inoutName) throws BookkeepingException {
+		if (inoutName == null || inoutName.trim().length() == 0) {
+			throw new BookkeepingException("收入或支出字符串格式不符");
+		}
+		InOut inout = InOut.switchNameToInOut(inoutName.trim());
+		ArrayList<Record> list = dao.findRecordsByInOut(inout);
+		return list;
+		
+	}
+	
+	/**
+	 * 根據「收支細項」查找收支記錄
+	 * @param itemName String 型別
+	 */
+	public ArrayList<Record> findRecordsByCategoryItem(String itemName) throws BookkeepingException {
+		if (itemName == null || itemName.trim().length() == 0) {
+			throw new BookkeepingException("收支細項字符串格式不符");
+		}
+		CategoryItem item = CategoryItem.switchNameToItem(itemName.trim());
+		ArrayList<Record> list = dao.findRecordsByCategoryItem(item);
+		return list;
+	}
+	
+	/**
 	 * 更新一筆收支記錄
 	 * @return 被更新的筆數
 	 */
-	public int updateRecord(Integer id, Double amount, String categoryItemName, String dateStr, String desc) throws BookkeepingException {
+	public int updateRecordById(Integer id, Double amount, String categoryItemName, String dateStr, String desc) throws BookkeepingException {
 		Record record = new Record();
 		record.setId(id);
 		record.setAmount(amount);
@@ -98,7 +130,7 @@ public class RecordService {
 	 * @param recordId 欲刪除的收支記錄 ID
 	 * @return 被刪除的筆數
 	 */
-	public int deleteRecord(Integer recordId) throws BookkeepingException {
+	public int deleteRecordById(Integer recordId) throws BookkeepingException {
 		if (recordId == null || recordId == 0) {
 			throw new BookkeepingException("必須傳入欲刪除的收支記錄ID");
 		}

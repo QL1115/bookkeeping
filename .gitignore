@@ -1,3 +1,5 @@
 src/util/jdbc.properties
 src/util/Database.java
+bin/
 Tester.java
+README.md
